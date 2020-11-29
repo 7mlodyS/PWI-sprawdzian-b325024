@@ -1,0 +1,177 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[nofoot,hdivide={2cm,*,1cm},vdivide={1cm,*,1cm}]{geometry}
+\pagestyle{empty}
+\author{Stefan Bogdan}
+\title{Sprawozdanie z kolokwium}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+\section*{Zadanie 1}
+\begin{itemize}
+    \item $ \rho \frac{D \textbf{u}}{Dt} = \rho \big( \frac{\partial \textbf{u}}{\partial t} + \textbf{u} \cdot \nabla
+            \textbf{u} \big) = - \nabla \overline{p} + \nabla \cdot \big \{ \mu \big( \nabla \textbf{u} + \big( \nabla 
+            \textbf{u} \big) ^\text{T} - \frac{2}{3} \big( \nabla \cdot \textbf{u} \big) \textbf{I} \big) \big \} + \rho
+            \textbf{g} $
+            
+    \item $ \tilde{f}(\xi) = \int^\infty_{-\infty} f(x) e^{-2\pi ix \xi} dx $
+    
+    \item $ \mathbb{P} \big( \hat{X_n} - z_{1 - \frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}} \leqslant \mathbb{E}X 
+            \leqslant \hat{X_n} + z_{1 - \frac{\alpha}{2}} \frac{\sigma}{\sqrt{n}} \big) \approx 1 - \alpha $
+            
+    \item $ \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \otimes \begin{bmatrix} 0 & 5 \\ 6 & 7 \end{bmatrix} = 
+            \begin{bmatrix} 
+            1 \begin{bmatrix} 0 & 5 \\ 6 & 7 \end{bmatrix} & 2 \begin{bmatrix} 0 & 5 \\ 6 & 7 \end{bmatrix} \\
+            3 \begin{bmatrix} 0 & 5 \\ 6 & 7 \end{bmatrix} & 4 \begin{bmatrix} 0 & 5 \\ 6 & 7 \end{bmatrix}
+            \end{bmatrix} =
+            \begin{bmatrix} 0 & 5 & 0 & 10 \\ 6 & 7 & 12 & 14 \\ 0 & 15 & 0 & 20 \\ 18 & 21 & 24 & 28 \end{bmatrix}
+          $
+\end{itemize}
+
+\section*{Zadanie 2}
+
+\subsection*{2.1. Generowanie klucza}
+\begin{verbatim}
+ssh-keygen -t rsa -C "stefan7bogdan@gmail.com"
+\end{verbatim}
+\begin{itemize}
+    \item \verb+ssh-keygen+ to komenda generująca klucz
+    \item flaga \verb+t+ określa typ klucza - tutaj \verb+rsa+
+    \item flaga \verb+C+ dodaje komentarz, w cudzysłowach podaję nazwę użytkownika, z kórym ma być powiązany ten klucz
+\end{itemize}
+Generuję takie dwa klucze - jeden do repozytorium i jeden do serwera.
+
+\subsection*{2.2. Przenoszenie klucza na zdalny serwer}
+\begin{verbatim}
+ssh-copy-id -i ~/.ssh/id_pwi_rsa b325024@pwi.ii.uni.wroc.pl
+\end{verbatim}
+\begin{itemize}
+    \item \verb+ssh-copy-id+ to komenda kopiująca klucz na serwer
+    \item flaga \verb+i+ określa plik z którego klucz ma być przekopiowany, podaję do niego ścieżkę
+    \item na koniec jest \verb+user@host+
+\end{itemize}
+Wpisuję hasło i klucze znajdują się już na serwrze.\\
+
+\subsection*{2.3. Tworzenie repozytorium na GitHubie}
+Wchodzę na GitHuba i wybieram odpowiednio:
+\begin{verbatim}
+Ikonka mojego profilu -> Your repositories -> New -> wpisuję nazwę -> Create 
+\end{verbatim}
+i w taki sposób mam stworzone nowe puste repozytorium.
+
+\noindent Wchodzę do niego i wybieram:
+\begin{verbatim}
+Settings -> Deploy keys -> wpisuję tytuł i kopiuję klucz publiczny -> Add key
+\end{verbatim}
+i w taki sposób mam dodany klucz na moje repozytorium.\\
+
+\subsection*{2.4. Tworzenie pliku konfiguracyjnego}
+\begin{verbatim}
+cd .ssh
+touch config
+\end{verbatim}
+Wygląd pliku \verb+config+:
+\begin{verbatim}
+Host pwi-sprawdzian
+        Hostname pwi.ii.uni.wroc.pl
+        User b325024
+        Identityfile ~/.ssh/id_pwi_rsa
+\end{verbatim}
+\begin{itemize}
+    \item pierwsza linijka wskazuje na to czego będzie używać ssh kiedy wywoła się go komendę \verb+ssh pwi-sprawdzian+
+    \item \verb+Hostname+ to nazwa hosta, z którym będziemy się łączyć
+    \item \verb+User+ to nazwa użytkownika, przez którego będziemy się łączyć
+    \item \verb+Identityfile+ to ścieżka to pliku, w którym jest nasz klucz prywatny
+\end{itemize}
+
+Teraz mogę połączyć się z serwerem wydając tylko polecenie \verb+ssh pwi-sprawdzian+
+
+\subsection*{2.5. Przekierowanie klucza lokalnego}
+Żeby przekierować klucz lokalny trzeba dodać do pliku \verb+config+ linijkę \verb+ForwardAgent yes+ co będzie oznaczało, że będziemy uzywać agetna ssh.
+
+\section*{Zadanie 3}
+
+\subsection*{3.1. Klonowanie repozytorium}
+Najpierw muszę odpalić agenta ssh, żeby mógł \emph{przeforwardować} klucz z mojego komputera gdzieś dalej. Jeśli tego nie zrobię, mogę \emph{brzydko} wygenerować
+kolejny klucz na zdalnym komputerze. Jest to \emph{brzydkie} rozwiązanie, ponieważ dostęp do tego klucza na serwerze może mieć ktoś inny oprócz mnie
+i może się podemnie podszywać. Dodaję więc mój klucz do agenta ssh komendą \verb+ssh-add ~/.ssh/id_github_rsa+, podając ścieżkę do mojego klucza.\\
+Loguję się na serwer za pomocą komendy\\
+\verb+ssh pwi-sprawdzian+\\ 
+i klonuje moje repozytorium komendą\\
+\verb+git clone git@github.com:7mlodyS/PWI-sprawdzian-b325024.git+
+
+\subsection*{3.2 Pobieranie i skomitowanie zmian}
+Będąc w koatalogu z moim rezpozytorium pobieram plik poleceniem \\
+\verb+wget http://www.ii.uni.wroc.pl/~lisu/zadanie.tar.gz+ \\
+Wypakowuję go komendą 
+\verb+tar -xf zadanie.tar.gz+
+\begin{itemize}
+    \item flaga \verb+x+ od \emph{extract} rozpakowuje pliki w archiwum
+    \item flaga \verb+f+ od \emph{file} mówi, że ma rozpakować później podany plik, czyli \verb+zadanie.tar.gz+
+\end{itemize}
+Żeby skomitować zmiany wykonuję komendy:
+\begin{verbatim}
+git add .
+git commit -m "pierwszy"
+\end{verbatim}
+
+\subsection*{3.3.1 Wyszukanie zadania}
+Wyliczam funkcję skórtu \verb+MD5+ ze stringa \verb+b325024+ komendą \\ 
+\verb+echo -n b325024 | md5sum+
+\begin{itemize}
+    \item flaga \verb+n+ nie dodaje znaku końca lini po wypisanym tekscie
+\end{itemize}
+
+\noindent Dostałem: \verb+50da5909fe4f874dfd1a3876c7bf7fd7+
+Wyszukuję taki folder komendą:\\
+\verb+find -type d -name "50da5909fe4f874dfd1a3876c7bf7fd7"+
+\begin{itemize}
+    \item flaga \verb+-type+ określa typ, a \verb+d+ to \emph{directory}, czyli folder
+    \item flaga \verb+-name+ określa nazwę którą poźniej podaję pomiędzy \verb+" "+
+\end{itemize}
+
+\subsection*{3.3.2 Wykonanie zadania}
+Szukam użytkowników z Polski komendą
+\begin{verbatim}
+grep -xc "[a-zA-Z@.:0-9]* | Country = POLAND .*" users.db
+\end{verbatim}
+\begin{itemize}
+    \item flaga \verb+x+ dopasowuje wyrażenie dokładnie do całej linii
+    \item flaga \verb+c+ liczy ilość wystąpień wyrażenia
+\end{itemize}
+Liczę wszystkich użytkowników komendą
+\begin{verbatim}
+grep -xc ".*" users.db
+\end{verbatim}
+Wyliczam ich stosunek w pythonie. Wynik to \verb+0.013893032175580652+
+\\ 
+\\
+Wycinam najpierw część znaków przed hasłem komendą i zapisuję je do pliku pomocniczego
+\begin{verbatim}
+sed 's/[^:]*://' users.db > pomocniczy.txt
+\end{verbatim}
+Teraz wycinam znaki po haśle komendą i zapisuję do pliku \verb+passwords.txt+
+\begin{verbatim}
+sed 's/ |.*//' pomocniczy.txt > passwords.txt
+\end{verbatim}
+
+\section*{Zadanie 4}
+Kopiuję plik \verb+sprawozdanie.tex+ na zdalne repozytorium komendą
+\begin{verbatim}
+scp sprawozdanie.pdf b325024@pwi.ii.uni.wroc.pl:PWI-sprawdzian-b325024
+\end{verbatim}
+
+
+
+\section*{bibliografia}
+\begin{verbatim}
+https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
+\end{verbatim}
+
+\end{document}
